@@ -20,4 +20,28 @@
         }        
     });
 
+    //emits the key pressed to start movement
+    document.onkeydown = function(event){
+        if(event.keyCode===68) //letter D
+            socket.emit('keyPress',{inputId:'right',state:true});
+        else if(event.keyCode===65) //letter A
+            socket.emit('keyPress',{inputId:'left',state:true});
+        else if(event.keyCode===87) //letter W
+            socket.emit('keyPress',{inputId:'up',state:true});
+        else if(event.keyCode===83) //letter S
+            socket.emit('keyPress',{inputId:'down',state:true});
+    }
+
+    //emits the key released to stop movement
+    document.onkeyup = function(event){
+        if(event.keyCode===68) //letter D
+            socket.emit('keyPress',{inputId:'right',state:false});
+        else if(event.keyCode===65) //letter A
+            socket.emit('keyPress',{inputId:'left',state:false});
+        else if(event.keyCode===87) //letter W
+            socket.emit('keyPress',{inputId:'up',state:false});
+        else if(event.keyCode===83) //letter S
+            socket.emit('keyPress',{inputId:'down',state:false});
+    }
+
 </script>
