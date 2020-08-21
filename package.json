@@ -1,0 +1,29 @@
+{
+  "name": "mmorpgnodejs",
+  "version": "1.0.0",
+  "description": "Multiplayer Online Game written in NodeJS",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/allaramo/mmorpgnodejs.git"
+  },
+  "keywords": [
+    "mmo",
+    "rpg",
+    "node"
+  ],
+  "author": "Alan Arango",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/allaramo/mmorpgnodejs/issues"
+  },
+  "homepage": "https://github.com/allaramo/mmorpgnodejs#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.4",
+    "socket.io": "^2.3.0"
+  }
+}

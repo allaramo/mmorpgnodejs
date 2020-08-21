@@ -1,0 +1,23 @@
+<!--creating a canvas-->
+<canvas id="canvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+<!--socket.io cdn-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js">
+</script>
+<!--main script-->
+<script>
+    //getting and setting the canvas
+    var canvas = document.getElementById("canvas").getContext("2d");
+    canvas.font = '30px Arial';
+
+    //creating the variable socket
+    var socket = io();
+
+    //drawing each player for each newPosition interval
+    socket.on('newPosition',function(data){
+        canvas.clearRect(0,0,500,500);
+        for(var i = 0; i < data.length; i++){
+            canvas.fillText('P'+data[i].number,data[i].x,data[i].y);
+        }        
+    });
+
+</script>
