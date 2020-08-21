@@ -15,7 +15,7 @@ var ip = process.env.IP || "127.0.0.1";
 var port = process.env.PORT || 3000;
 
 serv.listen(port, ip, function(){
-    console.log("Server Started");
+    console.log("Server Started on ip: " + ip + " and port " + port);
 });
 
 //creating variable that will hold the sockets
