@@ -11,7 +11,7 @@ app.get('/', function(req, res) {
 app.use('client',express.static(__dirname + '/client'));
 
 // vars and listener to start the Server
-var ip = process.env.IP || "127.0.0.1";
+var ip = process.env.IP || "0.0.0.0";
 var port = process.env.PORT || 3000;
 
 serv.listen(port, ip, function(){
