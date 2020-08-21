@@ -20,30 +20,143 @@ serv.listen(port, ip, function(){
 
 //creating variable that will hold the sockets
 var SOCKET_LIST = {};
-//creating variable that will hold the players
-var PLAYER_LIST = {};
+
+//creating an Entity with general parameters for the objects
+var Entity = function(){
+    var self ={
+        x:250,
+        y:250,
+        speedX: 0,
+        speedY: 0,
+        id: "",
+    }
+    self.update = function(){
+        self.updatePosition();
+    }
+    self.updatePosition = function(){
+        self.x += self.speedX;
+        self.y += self.speedY;
+    }
+    return self;
+}
 
 //creating Player object
 var Player = function(id){
-    var self = {
-        x:250,
-        y:250,
-        id:id,
-        number:""+ Math.floor(10*Math.random()),
-        right:false,
-        left:false,
-        up:false,
-        down:false,
-        maxSpeed: 10
+    //inherits from Entity
+    var self = Entity();
+    self.id = id;
+    self.number = ""+ Math.floor(10*Math.random());
+    self.right=false;
+    self.left=false;
+    self.up=false;
+    self.down=false;
+    self.maxSpeed = 10;
+
+    //updates the player
+    var super_update = self.update;
+
+    self.update = function(){
+        self.updateSpeed();
+        super_update();
     }
-    //updates the position of the player
-    self.updatePosition = function(){
-        if(self.right) self.x += self.maxSpeed;
-        if(self.left) self.x -= self.maxSpeed;
-        if(self.up) self.y -= self.maxSpeed;
-        if(self.down) self.y += self.maxSpeed;
+    
+    //updates the speed of the player
+    self.updateSpeed = function(){
+        if(self.right) 
+            self.speedX = self.maxSpeed;
+        else if(self.left) 
+            self.speedX = -self.maxSpeed;
+        else
+            self.speedX = 0;
+        
+        if(self.up) 
+            self.speedY = -self.maxSpeed;
+        else if(self.down) 
+            self.speedY = self.maxSpeed;
+        else 
+            self.speedY = 0;
     }
+    Player.list[id]=self;
     return self;
+}
+
+Player.list = {};
+Player.onConnect = function(socket){
+    var player = Player(socket.id);
+
+    //checks if the player moves and updates the state 
+    socket.on('keyPress', function(data){
+        if(data.inputId==='right') player.right = data.state;
+        else if(data.inputId==='left') player.left = data.state;
+        else if(data.inputId==='up') player.up = data.state;
+        else if(data.inputId==='down') player.down = data.state;
+    });
+}
+
+Player.onDisconnect = function(socket){
+    delete Player.list[socket.id];
+}
+
+Player.update = function(){
+    //creating a variable that will hold all players
+    var package = [];
+
+    //pushing each socket into the package
+    for(var i in Player.list){
+        var player = Player.list[i];
+        //updates the position according to the key pressed
+        player.update();
+        package.push({
+            x:player.x,
+            y:player.y,
+            number: player.number
+        });
+    }
+    return package;
+}
+
+//Creating object Bullet
+var Bullet = function(angle){
+    //inherits from Entity
+    var self = Entity();
+    self.id = Math.random();
+    //speed of bullets
+    self.speedX = Math.cos(angle/180*Math.PI)*10;
+    self.speedY = Math.sin(angle/180*Math.PI)*10;
+    //setting timer and var to remove bullets after some time
+    self.timer = 0;
+    self.toRemove = false;
+    var super_update = self.update;
+    self.update = function(){
+        if(self.timer++>100)
+            self.toRemove = true;
+        super_update();
+    }
+    Bullet.list[self.id] = self;
+    return self;
+}
+
+Bullet.list = {};
+
+Bullet.update = function(){
+    //creates a bullet with a random angle
+    if(Math.random()<0.1){
+        Bullet(Math.random()*360);
+    }
+    //creating a variable that will hold all players
+    var package = [];
+
+    //pushing each socket into the package
+    for(var i in Bullet.list){
+        var bullet = Bullet.list[i];
+        //updates the position according to the key pressed
+        bullet.update();
+        package.push({
+            x:bullet.x,
+            y:bullet.y
+        });
+    }
+    return package;
 }
 
 //requiring socket library
@@ -55,41 +168,22 @@ io.sockets.on('connection',function(socket){
     socket.id = Math.random();    
     //adding the socket to the array
     SOCKET_LIST[socket.id] = socket;
-    //creating the player with the id
-    var player = Player(socket.id);
-    //adding the player to the list
-    PLAYER_LIST[socket.id] = player;
-
+    
+    Player.onConnect(socket);
+    
     //deleting the socket and player from the array when it disconnects
     socket.on('disconnect', function(){
         delete SOCKET_LIST[socket.id];
-        delete PLAYER_LIST[socket.id];
-    });
-
-    //checks if the player moves and updates the state 
-    socket.on('keyPress', function(data){
-        if(data.inputId==='right') player.right = data.state;
-        else if(data.inputId==='left') player.left = data.state;
-        else if(data.inputId==='up') player.up = data.state;
-        else if(data.inputId==='down') player.down = data.state;
-    });
+        Player.onDisconnect(socket);        
+    });    
 });
 
 //interval each 40ms
 setInterval(function(){
-    //creating a variable that will hold all players
-    var package = [];
-
-    //pushing each socket into the package
-    for(var i in PLAYER_LIST){
-        var player = PLAYER_LIST[i];
-        //updates the position according to the key pressed
-        player.updatePosition();
-        package.push({
-            x:player.x,
-            y:player.y,
-            number: player.number
-        });
+    //updating the package and its objects
+    var package = {
+        player: Player.update(),
+        bullet: Bullet.update()
     }
 
     //emitting new position with the package as a parameter

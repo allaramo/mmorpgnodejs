@@ -12,12 +12,17 @@
     //creating the variable socket
     var socket = io();
 
-    //drawing each player for each newPosition interval
+    //drawing each object for each newPosition interval
     socket.on('newPosition',function(data){
         canvas.clearRect(0,0,500,500);
-        for(var i = 0; i < data.length; i++){
-            canvas.fillText('P'+data[i].number,data[i].x,data[i].y);
-        }        
+        //drawing the player
+        for(var i = 0; i < data.player.length; i++){
+            canvas.fillText('P'+data.player[i].number, data.player[i].x, data.player[i].y);
+        }    
+        //drawing the bullets
+        for(var i = 0; i < data.bullet.length; i++){
+            canvas.fillRect(data.bullet[i].x-5,data.bullet[i].y-5,10,10);
+        }      
     });
 
     //emits the key pressed to start movement
