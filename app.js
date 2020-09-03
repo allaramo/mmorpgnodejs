@@ -175,7 +175,20 @@ io.sockets.on('connection',function(socket){
     socket.on('disconnect', function(){
         delete SOCKET_LIST[socket.id];
         Player.onDisconnect(socket);        
-    });    
+    });  
+    //sending messages
+    socket.on('sendMsgToServer', function(data){
+        var playerName = ("" + socket.id).slice(2,7);
+        for(var i in SOCKET_LIST){
+            SOCKET_LIST[i].emit('addToChat', playerName + ': ' + data);
+        }              
+    });  
+    //eval
+    socket.on('evalServer', function(data){
+        var res = eval(data);
+        socket.emit('evalAnswer', res);
+    })
+
 });
 
 //interval each 40ms

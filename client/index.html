@@ -1,10 +1,25 @@
 <!--creating a canvas-->
 <canvas id="canvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+
+<!--chat form-->
+<div id="chat-text" style="width:500px;height:100px;overflow-y:scroll">
+    <div>Hello</div>
+</div>
+
+<form id="chat-form">
+    <input id="chat-input" type="text" style="width:500px">
+</form>
+<!--end of chat form-->
+
 <!--socket.io cdn-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js">
 </script>
 <!--main script-->
 <script>
+    //getting chat
+    var chatText = document.getElementById('chat-text');
+    var chatInput = document.getElementById('chat-input');
+    var chatForm = document.getElementById('chat-form');
     //getting and setting the canvas
     var canvas = document.getElementById("canvas").getContext("2d");
     canvas.font = '30px Arial';
@@ -24,6 +39,25 @@
             canvas.fillRect(data.bullet[i].x-5,data.bullet[i].y-5,10,10);
         }      
     });
+
+    socket.on('addToChat', function(data){
+        chatText.innerHTML += '<div>' + data + '</div>';
+    });
+
+    socket.on('evalAnswer', function(data){
+        console.log(data);
+    });
+
+    chatForm.onsubmit = function(e){
+        //prevents refreshing the page for each enter
+        e.preventDefault();
+        //removes /
+        if(chatInput.value[0] === '/')
+            socket.emit('evalServer', chatInput.value.slice(1));
+        else
+            socket.emit('sendMsgToServer', chatInput.value);
+        chatInput.value ='';
+    };
 
     //emits the key pressed to start movement
     document.onkeydown = function(event){
